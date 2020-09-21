@@ -1,0 +1,51 @@
+---
+title: "Breadcrumbs"
+author: "Fabio Votta"
+date: "The Date"
+output: github_document
+---
+
+
+
+
+## Packages and Folders
+
+```{r}
+# Install these packages if you don't have them yet
+# if (!require("pacman")) install.packages("pacman")
+
+pacman::p_load(tidyverse, rvest, tidybrowse, magrittr)
+
+```
+
+
+## Scrape Data
+
+```{r}
+
+# First Container
+chrome <- docker$new(
+  image_src = "selenium/standalone-chrome-debug", #Image to be used (model for the container)
+  container_name = "chrome",
+  other_arguments = "-p 4446:4444 -p 4447:5900"
+  
+  # Name you want to use
+)
+
+view_container("chrome") #Since we have not yet initialize any browser, we do not see anything, but the raw container/mini-computer.
+
+chrome_driver <- get_driver(4446)
+
+chrome_driver$open()
+
+chrome_driver$navigate("https://qanon.pub/#142")
+
+
+chrome_driver$getPageSource() %>% 
+  extract2(1) %>% 
+  read_html() %>% 
+  html_nodes(".text") %>%
+  as.character() %>%
+  str_split("<br>") %>%
+  unlist()
+```
