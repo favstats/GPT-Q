@@ -1,14 +1,12 @@
 ---
-title: "Breadcrumbs"
-author: "Fabio Votta"
-date: "The Date"
+title: "GPT-Q"
 output: github_document
 ---
 
 
 
 
-## Packages and Folders
+## Packages
 
 ```{r}
 # Install these packages if you don't have them yet
@@ -21,18 +19,15 @@ pacman::p_load(tidyverse, rvest, tidybrowse, magrittr)
 
 ## Scrape Data
 
-```{r}
-
+```{r, eval = F}
 # First Container
 chrome <- docker$new(
   image_src = "selenium/standalone-chrome-debug", #Image to be used (model for the container)
   container_name = "chrome",
   other_arguments = "-p 4446:4444 -p 4447:5900"
-  
-  # Name you want to use
 )
 
-view_container("chrome") #Since we have not yet initialize any browser, we do not see anything, but the raw container/mini-computer.
+view_container("chrome") #Since we have not yet initialized any browser, we do not see anything, but the raw container/mini-computer.
 
 chrome_driver <- get_driver(4446)
 
@@ -40,12 +35,27 @@ chrome_driver$open()
 
 chrome_driver$navigate("https://qanon.pub/#142")
 
+## store page
+q <- chrome_driver$getPageSource() %>% 
+  extract2(1) 
 
-chrome_driver$getPageSource() %>% 
-  extract2(1) %>% 
+## save ot
+saveRDS(q, file = "q.rds")
+```
+
+## Look at Trivia
+
+```{r}
+q <- readRDS(file = "q.rds")
+
+q_trivia <- q %>% 
   read_html() %>% 
   html_nodes(".text") %>%
   as.character() %>%
   str_split("<br>") %>%
   unlist()
+
+write_lines(q_trivia, path = "q_trivia.txt", sep = "\n")
+
+q_trivia
 ```
